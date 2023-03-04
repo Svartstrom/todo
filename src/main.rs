@@ -10,10 +10,32 @@ struct Task {
 }
 
 impl Task {
-    fn from_terminal (raw: String) -> Self {
-        return Task {
-            prio: 9999,
-            description: String::clone(&raw.to_string())
+    fn from_terminal (raw: String) -> Option<Self> {
+        let re = Regex::new(r"^ ?(\d+) (.*)").unwrap();
+        let re2 = Regex::new(r"(.+)").unwrap();
+
+        match re.captures(&raw) {
+            Some(caps) => {
+                let cap1 = caps.get(1).unwrap().as_str();
+                let num: i32 = cap1.parse().unwrap();
+                let cap2 = caps.get(2).unwrap().as_str();
+                return Some(Task {
+                    prio: num,
+                    description: String::clone(&cap2.to_string())
+                })
+            }
+            None => {
+                match re2.captures(&raw) {
+                    Some(caps) => {                
+                        let cap2 = caps.get(1).unwrap().as_str();
+                        return Some(Task {
+                            prio: 9999,
+                            description: String::clone(&cap2.to_string())
+                        })
+                    }
+                    None => {return None;}
+                }
+            }
         }
     }
 
@@ -27,7 +49,6 @@ impl Task {
                 let cap1 = caps.get(1).unwrap().as_str();
                 let num: i32 = cap1.parse().unwrap();
                 let cap2 = caps.get(2).unwrap().as_str();
-                println!("cap: {}",cap2);
                 return Some(Task {
                     prio: num,
                     description: String::clone(&cap2.to_string())
@@ -39,7 +60,7 @@ impl Task {
 }
 
 /*
-fn print_todo(file: OpenOptions, todo: Vec<Task>) {
+fn print_todo(file: OpenOptions, todo: Vec<Task>) { 
 
 }*/
 
@@ -59,14 +80,17 @@ fn main() {
     for argument in env::args().skip(1) {
         full = full + &argument + " ";
     }
-    let todo = Task::from_terminal(full);
+   
 
     for line in buffer.split('\n') {
         if let Some(old) = Task::from_file(line.to_string()) {
             tasklist.push(old);
         }
     }
-    tasklist.push(todo);
+    if let Some(todo) = Task::from_terminal(full) {
+        tasklist.push(todo);
+    }
+    tasklist.sort_by(|d1, d2| d1.prio.cmp(&d2.prio));
 
     file.seek(SeekFrom::Start(0));
     for task in tasklist {
