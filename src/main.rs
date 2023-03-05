@@ -3,6 +3,7 @@ use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::io::SeekFrom;
 use regex::Regex;
+use std::fs::File;
 
 struct Task {
     prio: i32,
@@ -64,29 +65,39 @@ fn print_todo(file: OpenOptions, todo: Vec<Task>) {
 
 }*/
 
+fn get_tasklist(file: &mut File) -> Vec<Task> {
+    let mut buffer = String::new();
+    file.read_to_string(&mut buffer);
+    let mut tasklist: Vec<Task> = Default::default(); 
+    for line in buffer.split('\n') {
+        if let Some(old) = Task::from_file(line.to_string()) {
+            tasklist.push(old);
+        }
+    }
+    return tasklist;
+}
+
 fn main() {
     let mut tasklist: Vec<Task> = Default::default(); 
     
-    let mut buffer = String::new();
+    
     let mut file = OpenOptions::new()
         .read(true)
         .write(true)
         .create(true)
         .open("TODO")
         .unwrap();
-    file.read_to_string(&mut buffer);
+    
 
+    let l = env::args().count();
+    println!("{}",l);
     let mut full = String::new();
     for argument in env::args().skip(1) {
         full = full + &argument + " ";
     }
    
+    tasklist = get_tasklist(&mut file);
 
-    for line in buffer.split('\n') {
-        if let Some(old) = Task::from_file(line.to_string()) {
-            tasklist.push(old);
-        }
-    }
     if let Some(todo) = Task::from_terminal(full) {
         tasklist.push(todo);
     }
