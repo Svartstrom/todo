@@ -47,7 +47,6 @@ impl Task {
         if raw.len() == 0 {
             return None;
         }
-        //let re = Regex::new(r"=(\d*)= (.*)").unwrap();
         let re = Regex::new(r"id=(\d\d\d\d), prio=(\d\d\d\d): (.*)").unwrap();
         match re.captures(&raw) {
             Some(caps) => {
@@ -58,7 +57,7 @@ impl Task {
                 let cap3 = caps.get(3).unwrap().as_str();
                 return Some(Task {
                     prio: prio,
-                    id: 8888,
+                    id: id,
                     description: String::clone(&cap3.to_string())
                 })
             }
@@ -86,6 +85,7 @@ fn get_tasklist(file: &mut File) -> Vec<Task> {
             tasklist.push(old);
         }
     }
+    tasklist.sort_by(|d1, d2| d1.id.cmp(&d2.id));
     return tasklist;
 }
 
@@ -107,7 +107,12 @@ fn main() {
    
     tasklist = get_tasklist(&mut file);
 
-    if let Some(todo) = Task::from_terminal(full) {
+    if let Some(mut todo) = Task::from_terminal(full) {
+        let last_id = match tasklist.len() {
+            0 => 0,
+            n => tasklist[n-1].id
+        };
+        todo.id = last_id + 1;
         tasklist.push(todo);
     }
     tasklist.sort_by(|d1, d2| d1.prio.cmp(&d2.prio));

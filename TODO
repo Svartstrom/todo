@@ -1,4 +1,4 @@
-id=8888, prio=0010: delete done thing 
-id=8888, prio=0040: new thing 
-id=8888, prio=0050: now 
-id=8888, prio=9999: lastly this 
+id=0001, prio=0015: delete done task 
+id=0002, prio=0015: change prio on task 
+id=0003, prio=0015: make task in work 
+id=0004, prio=0015: done tasks shod be in a done-list 
