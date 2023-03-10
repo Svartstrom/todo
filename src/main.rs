@@ -5,6 +5,8 @@ use std::io::SeekFrom;
 use regex::Regex;
 use std::fs::File;
 
+
+
 struct Task {
     prio: i32,
     id: i32,
@@ -89,6 +91,14 @@ fn get_tasklist(file: &mut File) -> Vec<Task> {
     return tasklist;
 }
 
+fn get_task_from_terminal() -> String {
+    let mut full = String::new();
+    for argument in env::args().skip(1) {
+        full = full + &argument + " ";
+    }
+    return full;
+}
+
 fn main() {
     let mut tasklist: Vec<Task> = Default::default(); 
     
@@ -101,13 +111,11 @@ fn main() {
     
     let l = env::args().count();
     let mut full = String::new();
-    for argument in env::args().skip(1) {
-        full = full + &argument + " ";
-    }
-   
+
+    let terminal_task = get_task_from_terminal();
     tasklist = get_tasklist(&mut file);
 
-    if let Some(mut todo) = Task::from_terminal(full) {
+    if let Some(mut todo) = Task::from_terminal(terminal_task) {
         let last_id = match tasklist.len() {
             0 => 0,
             n => tasklist[n-1].id
