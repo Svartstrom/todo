@@ -54,8 +54,10 @@ impl Task {
             Some(caps) => {
                 let cap1 = caps.get(1).unwrap().as_str();
                 let id: i32 = cap1.parse().unwrap();
+
                 let cap2 = caps.get(2).unwrap().as_str();
                 let prio: i32 = cap2.parse().unwrap();
+
                 let cap3 = caps.get(3).unwrap().as_str();
                 return Some(Task {
                     prio: prio,
@@ -68,7 +70,7 @@ impl Task {
     }
 }
 
-fn print_todo(file: &mut File, tasklist: &Vec<Task>) { 
+fn print_todo(file: &mut File, tasklist: &mut Vec<Task>) { 
     file.seek(SeekFrom::Start(0)).unwrap();
     tasklist.sort_by(|d1, d2| d1.prio.cmp(&d2.prio));
     for task in tasklist {
@@ -92,16 +94,38 @@ fn get_tasklist(file: &mut File) -> Vec<Task> {
     return tasklist;
 }
 
-fn get_task_from_terminal() -> String {
+fn get_task_from_terminal(tasklist: &mut Vec<Task>) -> String {
     let mut full = String::new();
-    for argument in env::args().skip(1) {
-        full = full + &argument + " ";
+    let argc = env::args().count();
+    if argc > 1 {
+        let first_arg = std::env::args().nth(1).unwrap();
+        if first_arg == "-mv" {
+            if !argc == 4 {
+                println!("Usage 'todo -mv id_nr new_prio'");
+                return full;
+            } else {
+                for task in tasklist{
+                    let second_arg = std::env::args().nth(2).unwrap();
+                    let id_nr: i32 = second_arg.as_str().parse().unwrap();
+                    if task.id == id_nr {
+                        let third_arg = std::env::args().nth(3).unwrap();
+                        let prio: i32 = third_arg.as_str().parse().unwrap();
+                        task.prio = prio;
+                    }
+                }
+            }
+        } else {
+            for argument in env::args().skip(1) {
+                full = full + &argument + " ";
+            }
+        }
     }
     return full;
 }
 
 fn main() {
-    let mut tasklist: Vec<Task> = Default::default(); 
+    let mut tasklist: Vec<Task> = Default::default();
+    
     
     let mut file = OpenOptions::new()
         .read(true)
@@ -110,11 +134,10 @@ fn main() {
         .open("TODO")
         .unwrap();
     
-    let l = env::args().count();
-    let mut full = String::new();
-
-    let terminal_task = get_task_from_terminal();
-    tasklist = get_tasklist(&mut file);
+    tasklist = get_tasklist(&mut file); 
+    
+    let terminal_task = get_task_from_terminal(&mut tasklist);
+    
 
     if let Some(mut todo) = Task::from_terminal(terminal_task) {
         let last_id = match tasklist.len() {
@@ -125,6 +148,5 @@ fn main() {
         tasklist.push(todo);
     }
     
-
-    print_todo(&mut file, &tasklist);
+    print_todo(&mut file, &mut tasklist);
 }
