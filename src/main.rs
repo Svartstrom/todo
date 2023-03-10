@@ -70,6 +70,7 @@ impl Task {
 
 fn print_todo(file: &mut File, tasklist: &Vec<Task>) { 
     file.seek(SeekFrom::Start(0)).unwrap();
+    tasklist.sort_by(|d1, d2| d1.prio.cmp(&d2.prio));
     for task in tasklist {
         println!(":::id={:04}, prio={:04}: {}",task.id, task.prio, task.description);
         if let Err(e) = writeln!(file, "id={:04}, prio={:04}: {}",task.id, task.prio, task.description) {
@@ -123,7 +124,7 @@ fn main() {
         todo.id = last_id + 1;
         tasklist.push(todo);
     }
-    tasklist.sort_by(|d1, d2| d1.prio.cmp(&d2.prio));
+    
 
     print_todo(&mut file, &tasklist);
 }
