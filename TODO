@@ -1,9 +1,7 @@
-id=0001, prio=0015: delete done task 
-id=0002, prio=0015: change prio on task 
-id=0003, prio=0017: make task in work 
 id=0010, prio=0020: add --help 
 id=0005, prio=0021: the todo-file should be saved in git-root folder 
 id=0004, prio=0030: done tasks shod be in a done-list 
+id=0003, prio=0035: make task in work 
 id=0009, prio=0100: testingffff
 id=0006, prio=9999: here is testing 
 id=0007, prio=9999: move get from terminal 

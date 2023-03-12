@@ -79,7 +79,8 @@ fn print_todo(file: &mut File, tasklist: &mut Vec<Task>) {
             eprintln!("Couldn't write to file: {}", e);
         }
     }
-    file.set_len(file.stream_position().unwrap());
+    let pos = file.stream_position().unwrap();
+    file.set_len(pos);
 }
 
 fn get_tasklist(file: &mut File) -> Vec<Task> {
