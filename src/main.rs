@@ -79,6 +79,7 @@ fn print_todo(file: &mut File, tasklist: &mut Vec<Task>) {
             eprintln!("Couldn't write to file: {}", e);
         }
     }
+    file.set_len(file.stream_position().unwrap());
 }
 
 fn get_tasklist(file: &mut File) -> Vec<Task> {
@@ -94,27 +95,44 @@ fn get_tasklist(file: &mut File) -> Vec<Task> {
     return tasklist;
 }
 
+fn move_task(tasklist: &mut Vec<Task>) {
+    let argc = env::args().count();
+    if !argc == 4 {
+        println!("Usage 'todo -mv id_nr new_prio'");
+    } else {
+        for task in tasklist{
+            let second_arg = std::env::args().nth(2).unwrap();
+            let id_nr: i32 = second_arg.as_str().parse().unwrap();
+            if task.id == id_nr {
+                let third_arg = std::env::args().nth(3).unwrap();
+                let prio: i32 = third_arg.as_str().parse().unwrap();
+                task.prio = prio;
+            }
+        }
+    }
+}
+
+fn delete_task(tasklist: &mut Vec<Task>){
+    let argc = env::args().count();
+    if !argc == 3 {
+        println!("Usage 'todo -d id_nr");
+    } else {
+        let second_arg = std::env::args().nth(2).unwrap();
+        let id_nr: i32 = second_arg.as_str().parse().unwrap();
+        tasklist.retain(|x| x.id != id_nr);
+    }
+}
+
 fn get_task_from_terminal(tasklist: &mut Vec<Task>) -> String {
     let mut full = String::new();
     let argc = env::args().count();
     if argc > 1 {
         let first_arg = std::env::args().nth(1).unwrap();
         if first_arg == "-mv" {
-            if !argc == 4 {
-                println!("Usage 'todo -mv id_nr new_prio'");
-                return full;
-            } else {
-                for task in tasklist{
-                    let second_arg = std::env::args().nth(2).unwrap();
-                    let id_nr: i32 = second_arg.as_str().parse().unwrap();
-                    if task.id == id_nr {
-                        let third_arg = std::env::args().nth(3).unwrap();
-                        let prio: i32 = third_arg.as_str().parse().unwrap();
-                        task.prio = prio;
-                    }
-                }
-            }
-        } else {
+            move_task(tasklist);
+        } else if first_arg == "-d" {
+            delete_task(tasklist);
+        }else {
             for argument in env::args().skip(1) {
                 full = full + &argument + " ";
             }
@@ -125,7 +143,6 @@ fn get_task_from_terminal(tasklist: &mut Vec<Task>) -> String {
 
 fn main() {
     let mut tasklist: Vec<Task> = Default::default();
-    
     
     let mut file = OpenOptions::new()
         .read(true)
